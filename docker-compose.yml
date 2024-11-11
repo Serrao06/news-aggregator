@@ -74,6 +74,10 @@ services:
     working_dir: /var/www
     volumes: 
       - ./:/var/www
+    depends_on:
+      - db
+      - redis
+      - php
 
   # node server
   node:
