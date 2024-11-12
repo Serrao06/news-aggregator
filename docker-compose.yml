@@ -78,6 +78,7 @@ services:
       - db
       - redis
       - php
+      - node
 
   # node server
   node:

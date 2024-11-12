@@ -10,4 +10,4 @@ Artisan::command('inspire', function () {
 
 Artisan::command('app:fetch-news', function() {
     app(FetchNews::class)->handle();
-})->purpose('Fetch news from multiple sources')->everyTenMinutes();
+})->purpose('Fetch news from multiple sources')->everyThreeMinutes();
