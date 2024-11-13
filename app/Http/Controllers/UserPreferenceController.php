@@ -9,10 +9,79 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use OpenApi\Annotations as OA;
 use Exception;
 
 class UserPreferenceController extends Controller
 {
+
+    /**
+     * @OA\Post(
+     *     path="/api/set-user-preference",
+     *     summary="Store user preferences",
+     *     description="This endpoint allows the user to store or update their preferences (e.g., author, source, category) in the system.",
+     *     tags={"Preferences"},
+     *     security={{"sanctum": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"preference_key", "preference_value"},
+     *             @OA\Property(
+     *                 property="preference_key",
+     *                 type="string",
+     *                 enum={"author", "source", "category"},
+     *                 example="author",
+     *                 description="Key of the preference to store."
+     *             ),
+     *             @OA\Property(
+     *                 property="preference_value",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="string",
+     *                     example="John Doe",
+     *                     description="Value for the preference (e.g., list of authors, sources, or categories)"
+     *                 ),
+     *                 description="List of preference values"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Preferences successfully updated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Preferences updated successfully"),
+     *             @OA\Property(
+     *                 property="preferences",
+     *                 type="array",
+     *                 @OA\Items(type="string"),
+     *                 example={"John Doe", "Jane Smith"},
+     *                 description="Updated preference values"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *       response=422,
+     *       description="Validation failed",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="Validation failed"),
+     *           @OA\Property(
+     *               property="errors", 
+     *               type="object", 
+     *               additionalProperties={
+     *                   @OA\Property(type="array", @OA\Items(type="string"))
+     *               }
+     *           )
+     *       )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Internal server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="An error occurred while updating preferences. Please try later.")
+     *         )
+     *     )
+     * )
+     */
     function store(Request $request): JsonResponse
     {
 
@@ -71,6 +140,60 @@ class UserPreferenceController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/user-preference",
+     *     summary="Fetch news based on user preferences",
+     *     description="Returns a list of news articles filtered by the user's preferences (author, source, category). Cached for 10 minutes.",
+     *     operationId="getUserNews",
+     *     tags={"Preferences"},
+     *     security={{"apiAuth": {}}},
+     *     @OA\Parameter(
+     *         name="Authorization",
+     *         in="header",
+     *         description="Bearer token for authentication",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="string"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="News articles fetched successfully.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="News articles fetched successfully."),
+     *             @OA\Property(
+     *                 property="news",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="title", type="string"),
+     *                     @OA\Property(property="author", type="string"),
+     *                     @OA\Property(property="source", type="string"),
+     *                     @OA\Property(property="category", type="string"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="No preferences or news found for the user.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="No preferences found for this user.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="An error occurred while fetching news articles.",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="An error occurred while fetching news articles. Please try later.")
+     *         )
+     *     )
+     * )
+     */
     public function getUserNews(Request $request): JsonResponse
     {
         try {

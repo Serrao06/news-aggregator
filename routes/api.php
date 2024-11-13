@@ -7,14 +7,7 @@ use App\Http\Controllers\UserPreferenceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
-
-// Route::get('/', function () {
-//     return "API";
-// });
-Route::middleware('throttle:2,1')->group(function () {
+Route::middleware('throttle:30,1')->group(function () {
     Route::post('/forgot-password', [PasswordResetController::class, 'resetLink']);
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 
